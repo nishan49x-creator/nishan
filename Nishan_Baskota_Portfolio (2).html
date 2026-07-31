@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nishan Baskota — Digital Creator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12141a;
+    --ink-soft:#1b1e26;
+    --paper:#f5efe2;
+    --paper-line:#e2d9c4;
+    --crimson:#c8443c;
+    --gold:#d9a441;
+    --slate:#9298a6;
+    --slate-dark:#565c6b;
+    --track-v2:#c8443c;
+    --track-v1:#d9a441;
+    --track-a1:#5b8a72;
+    --radius:2px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--ink);
+    color:#e9e6dd;
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  ::selection{background:var(--crimson);color:#fff;}
+
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .display{font-family:'Bebas Neue',sans-serif;letter-spacing:.02em;}
+
+  a{color:inherit;text-decoration:none;}
+
+  /* ---------- utility ---------- */
+  .wrap{max-width:1120px;margin:0 auto;padding:0 32px;}
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:var(--gold);
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .eyebrow::before{
+    content:"";
+    width:16px;height:1px;background:var(--gold);
+    display:inline-block;
+  }
+
+  /* ---------- top bar: timecode ---------- */
+  .topbar{
+    position:fixed;top:0;left:0;right:0;z-index:50;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:18px 32px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    letter-spacing:.08em;
+    color:var(--slate);
+    background:linear-gradient(to bottom, rgba(18,20,26,.9), transparent);
+    pointer-events:none;
+  }
+  .topbar span{color:var(--gold);}
+
+  /* ---------- scrubber / playhead divider ---------- */
+  .scrubber{
+    position:relative;
+    height:34px;
+    display:flex;align-items:center;
+    margin:0 0;
+    overflow:hidden;
+  }
+  .scrubber .track{
+    position:absolute;left:0;right:0;top:50%;
+    height:1px;background:#2a2d36;
+  }
+  .scrubber .ticks{
+    position:absolute;left:0;right:0;top:50%;
+    display:flex;justify-content:space-between;
+    transform:translateY(-50%);
+  }
+  .scrubber .ticks i{
+    width:1px;height:10px;background:#3a3e49;
+    display:block;
+  }
+  .scrubber .ticks i:nth-child(5n+1){height:16px;background:var(--slate-dark);}
+  .playhead{
+    position:absolute;top:50%;transform:translate(-50%,-50%);
+    width:0;height:0;
+    border-left:7px solid transparent;
+    border-right:7px solid transparent;
+    border-top:10px solid var(--gold);
+    filter:drop-shadow(0 0 6px rgba(217,164,65,.6));
+  }
+
+  /* ---------- hero ---------- */
+  .hero{
+    min-height:100vh;
+    display:flex;flex-direction:column;justify-content:center;
+    position:relative;
+    padding:120px 32px 80px;
+    background:
+      radial-gradient(ellipse 900px 500px at 15% 0%, rgba(200,68,60,.18), transparent 60%),
+      radial-gradient(ellipse 700px 500px at 85% 100%, rgba(217,164,65,.10), transparent 60%),
+      var(--ink);
+  }
+  .hero-inner{max-width:1120px;margin:0 auto;width:100%;}
+  .hero .eyebrow{margin-bottom:28px;}
+  .hero h1{
+    font-size:clamp(64px, 12vw, 148px);
+    line-height:.92;
+    color:#f3efe4;
+    text-transform:uppercase;
+  }
+  .hero h1 em{
+    font-style:normal;
+    color:transparent;
+    -webkit-text-stroke:1.5px #f3efe4;
+  }
+  .hero .role-line{
+    margin-top:22px;
+    display:flex;flex-wrap:wrap;gap:14px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:14px;
+    letter-spacing:.04em;
+    color:var(--slate);
+  }
+  .hero .role-line b{color:var(--gold);font-weight:500;}
+  .hero .role-line .sep{color:#3a3e49;}
+
+  .hero-meta{
+    margin-top:56px;
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:24px;
+    border-top:1px solid #262a34;
+    padding-top:22px;
+  }
+  .hero-meta .m-label{
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--slate-dark);margin-bottom:6px;
+  }
+  .hero-meta .m-val{font-size:15px;color:#e9e6dd;font-weight:500;}
+  .hero-meta .m-val a{border-bottom:1px solid transparent;transition:.2s ease;}
+  .hero-meta .m-val a:hover{color:var(--gold);border-bottom-color:var(--gold);}
+
+  /* ---------- section shell ---------- */
+  section{position:relative;}
+  .sec-pad{padding:96px 0;}
+  .sec-head{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    margin-bottom:48px;
+    flex-wrap:wrap;gap:16px;
+  }
+  .sec-head h2{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(36px,5vw,56px);
+    letter-spacing:.01em;
+    text-transform:uppercase;
+  }
+  .sec-tc{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px;color:var(--slate-dark);
+    letter-spacing:.06em;
+  }
+
+  /* ---------- about (paper section) ---------- */
+  .about{
+    background:var(--paper);
+    color:var(--ink);
+  }
+  .about .eyebrow{color:var(--crimson);}
+  .about .eyebrow::before{background:var(--crimson);}
+  .about-grid{
+    display:grid;
+    grid-template-columns:1.1fr .9fr;
+    gap:56px;
+    align-items:start;
+  }
+  .about p{
+    font-size:19px;
+    line-height:1.65;
+    color:#2b2b26;
+  }
+  .about-card{
+    background:var(--ink);
+    color:#e9e6dd;
+    padding:28px 26px;
+    border-radius:var(--radius);
+    position:relative;
+  }
+  .about-card::before{
+    content:"REC";
+    position:absolute;top:16px;right:18px;
+    font-family:'JetBrains Mono',monospace;
+    font-size:10px;letter-spacing:.1em;
+    color:var(--crimson);
+  }
+  .about-card::after{
+    content:"";
+    position:absolute;top:19px;right:52px;
+    width:7px;height:7px;border-radius:50%;
+    background:var(--crimson);
+    box-shadow:0 0 8px var(--crimson);
+  }
+  .about-card h3{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--gold);margin-bottom:16px;
+  }
+  .about-card ul{list-style:none;}
+  .about-card li{
+    display:flex;justify-content:space-between;
+    padding:10px 0;
+    border-bottom:1px solid #2a2d36;
+    font-size:14px;
+  }
+  .about-card li:last-child{border-bottom:none;}
+  .about-card li span:first-child{color:var(--slate);}
+  .about-card li span:last-child{color:#e9e6dd;font-weight:500;}
+
+  /* ---------- skills timeline ---------- */
+  .timeline{background:var(--ink);}
+  .track-row{
+    display:grid;
+    grid-template-columns:110px 1fr;
+    border-top:1px solid #232630;
+  }
+  .track-row:last-child{border-bottom:1px solid #232630;}
+  .track-label{
+    padding:22px 16px 22px 0;
+    font-family:'JetBrains Mono',monospace;
+  }
+  .track-label .id{
+    font-size:20px;font-weight:600;
+  }
+  .track-label .desc{
+    font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--slate-dark);margin-top:4px;
+  }
+  .track-row.v2 .track-label .id{color:var(--track-v2);}
+  .track-row.v1 .track-label .id{color:var(--track-v1);}
+  .track-row.a1 .track-label .id{color:var(--track-a1);}
+
+  .clips{
+    display:flex;flex-wrap:wrap;gap:10px;
+    align-items:center;
+    padding:18px 0;
+  }
+  .clip{
+    font-size:13.5px;
+    font-weight:500;
+    padding:11px 18px;
+    border-radius:2px;
+    border:1px solid;
+    background:rgba(255,255,255,.02);
+    white-space:nowrap;
+  }
+  .track-row.v2 .clip{border-color:rgba(200,68,60,.4);color:#e8b4b0;}
+  .track-row.v1 .clip{border-color:rgba(217,164,65,.4);color:#eccf9b;}
+  .track-row.a1 .clip{border-color:rgba(91,138,114,.45);color:#a9cfba;}
+
+  /* ---------- focus grid ---------- */
+  .focus{background:var(--ink-soft);}
+  .focus-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:1px;
+    background:#2a2d36;
+    border:1px solid #2a2d36;
+  }
+  .focus-card{
+    background:var(--ink-soft);
+    padding:34px 26px;
+    min-height:190px;
+    display:flex;flex-direction:column;justify-content:space-between;
+  }
+  .focus-card .num{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;color:var(--slate-dark);
+  }
+  .focus-card h3{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:26px;
+    letter-spacing:.01em;
+    line-height:1.15;
+    margin-top:26px;
+    color:#f0ede2;
+  }
+
+  /* ---------- education ---------- */
+  .edu{background:var(--ink);}
+  .edu-row{
+    display:flex;justify-content:space-between;align-items:center;
+    padding:30px 0;
+    border-top:1px solid #232630;
+    border-bottom:1px solid #232630;
+    flex-wrap:wrap;gap:16px;
+  }
+  .edu-row .deg{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:.01em;}
+  .edu-row .school{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--slate);margin-top:6px;}
+  .edu-row .tc{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--slate-dark);}
+
+  /* ---------- languages (audio tracks) ---------- */
+  .lang{background:var(--ink);}
+  .lang-row{
+    display:grid;grid-template-columns:130px 1fr 90px;
+    align-items:center;gap:20px;
+    padding:20px 0;
+  }
+  .lang-row .name{font-family:'JetBrains Mono',monospace;font-size:14px;color:#e9e6dd;font-weight:500;}
+  .wave{
+    display:flex;align-items:center;gap:3px;height:34px;
+  }
+  .wave span{
+    width:3px;background:var(--gold);border-radius:1px;opacity:.85;
+  }
+  .lang-row.nepali .wave span{background:var(--crimson);}
+  .lang-row .pct{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--slate);text-align:right;}
+
+  /* ---------- outro / contact ---------- */
+  .outro{
+    background:
+      radial-gradient(ellipse 800px 500px at 50% 100%, rgba(200,68,60,.16), transparent 60%),
+      var(--ink);
+    padding:120px 0 80px;
+    text-align:center;
+  }
+  .outro .eyebrow{justify-content:center;}
+  .outro .eyebrow::before{display:none;}
+  .outro h2{
+    font-family:'Bebas Neue',sans-serif;
+    font-size:clamp(44px,9vw,96px);
+    margin-top:20px;
+    line-height:1;
+  }
+  .outro-links{
+    margin-top:44px;
+    display:flex;justify-content:center;gap:18px;flex-wrap:wrap;
+  }
+  .outro-links a{
+    font-family:'JetBrains Mono',monospace;
+    font-size:14px;
+    padding:16px 28px;
+    border:1px solid #3a3e49;
+    border-radius:2px;
+    transition:.2s ease;
+  }
+  .outro-links a.primary{
+    background:var(--gold);color:var(--ink);border-color:var(--gold);font-weight:600;
+  }
+  .outro-links a:hover{border-color:var(--gold);color:var(--gold);}
+  .outro-links a.primary:hover{background:#e7b657;color:var(--ink);}
+
+  footer{
+    padding:32px;
+    text-align:center;
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    color:var(--slate-dark);
+    letter-spacing:.06em;
+  }
+
+  /* ---------- reveal on scroll ---------- */
+  .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease, transform .7s ease;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  @media (max-width:760px){
+    .about-grid{grid-template-columns:1fr;}
+    .hero-meta{grid-template-columns:1fr 1fr;}
+    .focus-grid{grid-template-columns:1fr 1fr;}
+    .track-row{grid-template-columns:1fr;}
+    .track-label{padding:16px 0 0;}
+    .lang-row{grid-template-columns:90px 1fr 60px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto;}
+    .reveal{transition:none;opacity:1;transform:none;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div>NB_PORTFOLIO.PROJ <span>// FACELESS_CUT</span></div>
+  <div id="clock">00:00:00:00</div>
+</div>
+
+<!-- HERO -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="eyebrow">NOW PLAYING</div>
+    <h1>NISHAN<br><em>BASKOTA</em></h1>
+    <div class="role-line">
+      <b>DIGITAL CREATOR</b><span class="sep">/</span>
+      <b>VIDEO EDITOR</b><span class="sep">/</span>
+      <b>GRAPHIC DESIGNER</b><span class="sep">/</span>
+      <b>FACELESS CREATOR</b>
+    </div>
+    <div class="hero-meta">
+      <div>
+        <div class="m-label">Based in</div>
+        <div class="m-val">Kathmandu, Nepal</div>
+      </div>
+      <div>
+        <div class="m-label">Languages</div>
+        <div class="m-val">English, Nepali</div>
+      </div>
+      <div>
+        <div class="m-label">Contact</div>
+        <div class="m-val">nishan49x@gmail.com</div>
+      </div>
+      <div>
+        <div class="m-label">TikTok</div>
+        <div class="m-val"><a href="https://www.tiktok.com/@classy.boy0" target="_blank" rel="noopener">@classy.boy0</a></div>
+      </div>
+      <div>
+        <div class="m-label">Instagram</div>
+        <div class="m-val"><a href="https://www.instagram.com/classyboy.0" target="_blank" rel="noopener">@classyboy.0</a></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="scrubber">
+  <div class="track"></div>
+  <div class="ticks" id="ticks"></div>
+  <div class="playhead" style="left:8%;"></div>
+</div>
+
+<!-- ABOUT -->
+<section class="about">
+  <div class="wrap sec-pad">
+    <div class="eyebrow">01 · PROFILE</div>
+    <div class="about-grid" style="margin-top:28px;">
+      <div class="reveal">
+        <p>Nishan builds content the way an editor builds a cut — deliberate, paced, and made to hold attention. Trained in Information Technology and self-taught behind the timeline, he works across video editing, graphic design, and faceless content formats, turning raw footage and ideas into content built for the feed. His interest sits at the intersection of storytelling and strategy: not just what looks good, but what grows.</p>
+      </div>
+      <div class="about-card reveal">
+        <h3>Project Info</h3>
+        <ul>
+          <li><span>Role</span><span>Digital / Content Creator</span></li>
+          <li><span>Format</span><span>Faceless, Short &amp; Long Form</span></li>
+          <li><span>Toolkit</span><span>Video, Graphic, Copy</span></li>
+          <li><span>Status</span><span style="color:var(--gold);">Open to work</span></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SKILLS AS TIMELINE TRACKS -->
+<section class="timeline">
+  <div class="wrap sec-pad">
+    <div class="sec-head">
+      <div>
+        <div class="eyebrow">02 · TIMELINE</div>
+        <h2 style="margin-top:14px;">Skills, Laid Out By Track</h2>
+      </div>
+      <div class="sec-tc">4 TRACKS · 12 CLIPS</div>
+    </div>
+
+    <div class="track-row v2 reveal">
+      <div class="track-label">
+        <div class="id">V2</div>
+        <div class="desc">Design</div>
+      </div>
+      <div class="clips">
+        <span class="clip">Graphic Design</span>
+        <span class="clip">Thumbnail &amp; Cover Art</span>
+        <span class="clip">Brand Visuals</span>
+      </div>
+    </div>
+
+    <div class="track-row v1 reveal">
+      <div class="track-label">
+        <div class="id">V1</div>
+        <div class="desc">Video</div>
+      </div>
+      <div class="clips">
+        <span class="clip">Video Editing</span>
+        <span class="clip">Short-Form Cuts</span>
+        <span class="clip">Long-Form Editing</span>
+        <span class="clip">Faceless Content Production</span>
+      </div>
+    </div>
+
+    <div class="track-row a1 reveal">
+      <div class="track-label">
+        <div class="id">A1</div>
+        <div class="desc">Strategy</div>
+      </div>
+      <div class="clips">
+        <span class="clip">Content Creation</span>
+        <span class="clip">Content Strategy</span>
+        <span class="clip">Digital Marketing</span>
+        <span class="clip">Social Growth</span>
+        <span class="clip">Personal Branding</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOCUS AREAS -->
+<section class="focus">
+  <div class="wrap sec-pad">
+    <div class="eyebrow">03 · FOCUS</div>
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,5vw,56px);margin-top:14px;margin-bottom:40px;">Where He's Headed</h2>
+  </div>
+  <div class="focus-grid">
+    <div class="focus-card reveal">
+      <div class="num mono">A</div>
+      <h3>Digital<br>Marketing</h3>
+    </div>
+    <div class="focus-card reveal">
+      <div class="num mono">B</div>
+      <h3>Social Media<br>Influencing</h3>
+    </div>
+    <div class="focus-card reveal">
+      <div class="num mono">C</div>
+      <h3>Faceless<br>Content Channels</h3>
+    </div>
+    <div class="focus-card reveal">
+      <div class="num mono">D</div>
+      <h3>Video &amp; Graphic<br>Production</h3>
+    </div>
+  </div>
+</section>
+
+<!-- EDUCATION -->
+<section class="edu">
+  <div class="wrap sec-pad" style="padding-bottom:20px;">
+    <div class="eyebrow">04 · EDUCATION</div>
+    <div class="edu-row reveal" style="margin-top:28px;">
+      <div>
+        <div class="deg">BSc. Information Technology</div>
+        <div class="school">ISMT College</div>
+      </div>
+      <div class="tc">DEGREE_TRACK.EDU</div>
+    </div>
+  </div>
+</section>
+
+<!-- LANGUAGES -->
+<section class="lang">
+  <div class="wrap" style="padding-bottom:96px;">
+    <div class="eyebrow">05 · LANGUAGES</div>
+    <div style="margin-top:28px;">
+      <div class="lang-row reveal">
+        <div class="name">ENGLISH</div>
+        <div class="wave" data-level="88"></div>
+        <div class="pct">FLUENT</div>
+      </div>
+      <div class="lang-row nepali reveal">
+        <div class="name">NEPALI</div>
+        <div class="wave" data-level="100"></div>
+        <div class="pct">NATIVE</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OUTRO / CONTACT -->
+<section class="outro">
+  <div class="wrap">
+    <div class="eyebrow">06 · CONTACT</div>
+    <h2>Let's Cut<br>Something Together.</h2>
+    <div class="outro-links">
+      <a class="primary" href="mailto:nishan49x@gmail.com">nishan49x@gmail.com</a>
+      <a href="tel:+9779762231637">+977 976-223-1637</a>
+      <a href="https://www.tiktok.com/@classy.boy0" target="_blank" rel="noopener">TikTok — @classy.boy0</a>
+      <a href="https://www.instagram.com/classyboy.0" target="_blank" rel="noopener">Instagram — @classyboy.0</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  NISHAN BASKOTA — KATHMANDU, NEPAL — © 2026
+</footer>
+
+<script>
+  // build scrubber ticks
+  const ticks = document.getElementById('ticks');
+  for(let i=0;i<40;i++){ const t=document.createElement('i'); ticks.appendChild(t); }
+
+  // fake running timecode
+  let f=0;
+  function pad(n,l=2){return String(n).padStart(l,'0');}
+  setInterval(()=>{
+    f++;
+    let frames=f%30, secs=Math.floor(f/30)%60, mins=Math.floor(f/1800)%60, hrs=Math.floor(f/108000);
+    document.getElementById('clock').textContent = pad(hrs)+':'+pad(mins)+':'+pad(secs)+':'+pad(frames);
+  },1000/30);
+
+  // build waveform bars
+  document.querySelectorAll('.wave').forEach(w=>{
+    const level = parseInt(w.dataset.level,10);
+    const bars = 46;
+    for(let i=0;i<bars;i++){
+      const s=document.createElement('span');
+      const base = 6 + Math.sin(i*0.5)*10 + Math.random()*14;
+      const h = Math.max(4, Math.min(30, base * (level/100)));
+      s.style.height = h+'px';
+      w.appendChild(s);
+    }
+  });
+
+  // scroll reveal
+  const io = new IntersectionObserver((entries)=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target);} });
+  },{threshold:.15});
+  document.querySelectorAll('.reveal').forEach(el=>io.observe(el));
+</script>
+
+</body>
+</html>
